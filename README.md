@@ -31,11 +31,8 @@ Compiling something is then done with ./caz -o example.bin example.z80
 <details>
 <summary>83p management</summary>
 
-I've created a set of pythonscripts to manage 83p files. One of which can make an 83p file out of a binary file.
+There are two python scripts to manage 83p files. One of which can make an 83p file out of a binary file. Another that can split 83g files into 83p files.
 
-The scripts can be found in the following git-repo https://github.com/deckaddict/ti8xtools.git
-
-Another tool available there can split 83g files into 83p files. This was created since the linux based emulator tilem did only support to load 83p files.
 </details>
 
 <details>
@@ -43,7 +40,7 @@ Another tool available there can split 83g files into 83p files. This was create
 
 The Google Play Store contains quite a few emulators for TI-83. As far as I've found out, only one of them (Wabbitemu) has officially support to load 83p files. I have however not managed to get it working good enough.
 
-Instead I prefer the more lean application called AndieGraph. This app is no longer available on the play store but its source code is available here (insert link!!).
+Instead I prefer the more lean application called AndieGraph. This app is no longer available on the play store but its source code is available here [https://github.com/dgmltn/AndieGraph].
 
 This emulator is based on AlmostTI. Although it doesn't feature a way to load 83p files it uses an external RAM file that can be manipulated.
 
