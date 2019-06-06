@@ -32,7 +32,6 @@ Compiling something is then done with ./caz -o example.bin example.z80
 <summary>83p management</summary>
 
 There are two python scripts to manage 83p files. One of which can make an 83p file out of a binary file. Another that can split 83g files into 83p files.
-
 </details>
 
 <details>
@@ -40,9 +39,11 @@ There are two python scripts to manage 83p files. One of which can make an 83p f
 
 The Google Play Store contains quite a few emulators for TI-83. As far as I've found out, only one of them (Wabbitemu) has officially support to load 83p files. I have however not managed to get it working good enough.
 
-Instead I prefer the more lean application called AndieGraph. This app is no longer available on the play store but its source code is available here [https://github.com/dgmltn/AndieGraph].
+Instead I prefer the more lean application called AndieGraph. This app is no longer available on the play store but its source code is available here (https://github.com/dgmltn/AndieGraph).
 
 This emulator is based on AlmostTI. Although it doesn't feature a way to load 83p files it uses an external RAM file that can be manipulated.
+
+The source is structured for the IntelliJ Android IDE but can be tweaked to work on your device for AIDE.
 
 You will need your own ROM-file for the emulator.
 </details>
@@ -51,6 +52,8 @@ You will need your own ROM-file for the emulator.
 <summary>AlmostTX</summary>
 
 Among with the scripts to manage 83p files there is a script called AlmostTX that can populate a fresh AlmostTI compatible RAM-file with 83p files.
+
+Generate the clean ram file by starting AndieGraph and doing exit immediately after "Mem cleared" appears on the screen. The RAM-file is then found in the same location as your ROM-file.
 </details>
 
 <details>
@@ -59,10 +62,10 @@ Among with the scripts to manage 83p files there is a script called AlmostTX tha
 There are several improvements to this type of environment. I will list some suggestions here.
 
 - The AlmostTX script is made for TI-83 ROM version 1.07000 no other versions are yet tested.
-- Extracting 83p files from a RAM-file would be nice.
+- Extracting 83p files from a RAM-file could be nice.
 - Supporting other variable types than program-files.
 - Make it work for more calculators, either by improving AlmostTX or making a more general link port service in the emulator.
-- I have made a pull request to improve the contrast handling in AndieGraph enabling fades.
+- There is a pull request to improve the contrast handling in AndieGraph enabling fades.
 - AndieGraph to get multitouch support. Pull request prepared.
 - Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
 </details>
@@ -76,5 +79,6 @@ There are several improvements to this type of environment. I will list some sug
 - Florent Dhordain for the sound through linkport, and documentation of the 83p file formats.
 - Joe Wingbermuehle for all the awesome code and library support in SOS.
 - Linus Åkesson for inspiration of fades using contrast.
+- Doug Melton for making AndieGraph open source.
 - To whoever wrote yoloader causing a copyright ruckus in the TI community.
 </details>
