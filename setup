@@ -1,0 +1,16 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+pkg install -y clang cmake curl p7zip python
+
+curl https://www.ticalc.org/pub/amiga/caz.lha --output caz.lha
+
+7z x caz.lha
+cd caz/src
+
+sed -i 's/dcc/clang/' makefile
+make caz
+chmod a+x caz
+cp caz ../../
+cd -
+
+rm -rf caz/

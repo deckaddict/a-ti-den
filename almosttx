@@ -1,0 +1,166 @@
+#!/data/data/com.termux/files/usr/bin/python
+
+# Almost Loaded
+# Script that loads 83p files into an AlmostTI RAM file.
+# Caveats:
+# You need a clean RAM file. This is created by running AndieGraph the first time and quitting when you see "Mem Cleared"
+# To start with this only works for 83p files.
+# More variable types might be made available.
+# ROM version 1.07000 is used, might not work on others
+#
+# Arguments:
+# Valid RAM-file (preferrably clean)
+# Name of desired output file.
+# List of 83p files to load in sequential order.
+
+import sys
+
+# Constants
+FATOVERHEAD = 4
+DATAOVERHEAD = 2
+
+assert len(sys.argv) > 3, "Not enough arguments"
+
+# Pseudo code
+# Check filesize 32768+1118 to validate that it is a proper ram-file
+# Read 1118 bytes and keep
+# Read 0x4000 bytes and then the next 16384 bytes
+# Create 0x8000 null bytes and add the loaded ram blocks in reverse
+
+file = open(sys.argv[1], 'rb')
+emulatorOverHead = file.read(1118)
+RAM2 = file.read(16384)
+RAM1 = file.read()
+file.close()
+
+length = len(RAM1)+len(RAM2)
+assert length==32768, "Filesize doesn't match the size of expected RAM-file"
+
+print("Loaded ",length," bytes of RAM memory")
+
+ram = bytearray(0x8000*b'\x00' + RAM1 + RAM2)
+
+# Read each program and create a list with an entry for each. Name, type, data, length, total memconsumption (4+len(name)+len(data)+2)
+variables = []
+totalSize = 0
+totalSizeFAT = 0
+for variableName in sys.argv[3:]:
+    # Improvement: Lots of additional format checking can be done.
+    variableFile = open(variableName, "rb")
+    fileData = variableFile.read()
+    variableFile.close()
+    assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
+    variable = {}
+    variable['type'] = fileData[0x3b]
+    variable['name'] = fileData[0x3c:0x44].rstrip(b'\x00')
+    variable['data'] = fileData[0x48:-2]
+    sizeFAT = len(variable['name']) + FATOVERHEAD
+    totalSize += sizeFAT + len(variable['data']) + DATAOVERHEAD
+    totalSizeFAT += sizeFAT
+    variables.append(variable)
+    print("Read " + str(variable['name']) + " from file")
+
+# Count and verify that it totals no more than 27118 bytes, which is how much space we got in a clean RAM.
+assert totalSize <= 27118, "Not enough memory available in RAM image"
+
+# Future: Move existing program data to fit FAT extension
+# Future: move y-vars (currently just zeros anyway)
+# Re-map Y-vars links
+for yvar in range(31):
+    yvar_ix = yvar*6
+    newAddress = ram[0xfdb2+yvar_ix] * 256 + ram[0xfdb2+yvar_ix+1] - totalSizeFAT
+    msb = newAddress//256
+    lsb = newAddress%256
+    ram[0xfdb2+yvar_ix] = msb
+    ram[0xfdb2+yvar_ix+1] = lsb
+
+# Storing start of Y-vars data
+# Note that source has MSB first and destination has LSB first
+ram[0x931B] = ram[0xfdb2+1]
+ram[0x931B+1] = ram[0xfdb2]
+ram[0x8098] = ram[0xfdb2+1]
+ram[0x8098+1] = ram[0xfdb2]
+yvars_start = ram[0xfdb2]*256 + ram[0xfdb2+1]
+# Calculate need of FAT data and figure out good start adress for programdata
+prgm_ptr = yvars_start - totalSize + totalSizeFAT
+prgm_pt2 = 0x9349
+
+ram[0x8098] = prgm_ptr % 256
+ram[0x8098+1] = prgm_ptr // 256
+ram[0x91e1] = prgm_ptr % 256
+ram[0x91e1+1] = prgm_ptr // 256
+ram[0x91e3] = prgm_ptr % 256
+ram[0x91e3+1] = prgm_ptr // 256
+
+someSize = ram[0x809a] + ram[0x809a+1]*256 + totalSize - totalSizeFAT
+ram[0x809a] = someSize % 256
+ram[0x809a+1] = someSize // 256
+
+# Iterate variable list and write FAT and programdata for each program.
+FAT_ptr = 0xfd75
+FAT_ptr -=1
+for variable in variables:
+    ram[FAT_ptr] = variable['type']
+    FAT_ptr -= 1
+    ram[FAT_ptr] = prgm_ptr % 256
+    FAT_ptr -= 1
+    ram[FAT_ptr] = prgm_ptr // 256
+    FAT_ptr -= 1
+    ram[FAT_ptr] = len(variable['name'])
+    FAT_ptr -= 1
+    for char in variable['name']:
+        ram[FAT_ptr] = char
+        FAT_ptr -= 1
+    ram[prgm_ptr] = len(variable['data']) % 256
+    prgm_ptr += 1
+    ram[prgm_ptr] = len(variable['data']) // 256
+    prgm_ptr += 1
+    for byte in variable['data']:
+        ram[prgm_ptr] = byte
+        prgm_ptr += 1
+
+    ram[prgm_pt2] = len(variable['data']) % 256
+    prgm_pt2 += 1
+    ram[prgm_pt2] = len(variable['data']) // 256
+    prgm_pt2 += 1
+    for byte in variable['data']:
+        ram[prgm_pt2] = byte
+        prgm_pt2 += 1
+
+
+# Update all pointers around 0x93.. and all pointers around fdb2-fe64
+endOfFAT = 0xfd75-totalSizeFAT
+endOfFAT_msb = endOfFAT//256
+endOfFAT_lsb = endOfFAT%256
+ram[0x9309] = endOfFAT_lsb
+ram[0x9309+1] = endOfFAT_msb
+ram[0x930B] = endOfFAT_lsb
+ram[0x930B+1] = endOfFAT_msb
+ram[0x930D] = endOfFAT_lsb
+ram[0x930D+1] = endOfFAT_msb
+
+belowFAT = endOfFAT - 1
+belowFAT_msb = belowFAT//256
+belowFAT_lsb = belowFAT%256
+ram[0x930F] = belowFAT_lsb
+ram[0x930F+1] = belowFAT_msb
+ram[0x9311] = belowFAT_lsb
+ram[0x9311+1] = belowFAT_msb
+ram[0x9317] = belowFAT_lsb
+ram[0x9317+1] = belowFAT_msb
+
+# Write back the 1118
+# Write 0xC000-0xFFFF
+# Write 0x8000-0xBFFF
+# Happy!
+
+newRAM = open(sys.argv[2], "wb")
+newRAM.write(emulatorOverHead)
+newRAM.write(ram[0xC000:])
+newRAM.write(ram[0x8000:0xC000])
+newRAM.close()
+print("Wrote new RAM-file " + sys.argv[2])
+
+newRAM = open('debug.ram', "wb")
+newRAM.write(ram)
+newRAM.close()
