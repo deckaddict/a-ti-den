@@ -13,24 +13,34 @@
 # Name of desired output file.
 # List of 83p files to load in sequential order.
 
-import sys
+import argparse
 
 # Constants
 FATOVERHEAD = 4
 DATAOVERHEAD = 2
 
-assert len(sys.argv) > 3, "Not enough arguments"
+parser = argparse.ArgumentParser(description='Load variable files into AlmostTI RAM-file.')
+parser.add_argument('tivars', metavar='TI-varfile', type=str, nargs='+',
+                    help='an 83p-file to be loaded.')
+parser.add_argument('--parent', type=str, default='clean.ram',
+                    help='RAM file to add variables into.')
+parser.add_argument('--child', type=str, default='new.ram',
+                    help='Resulting RAM file.')
+parser.add_argument('--debug', default='False', action='store_true',
+                    help='Output debug.ram (64KB) for analysis.')
 
-# Pseudo code
+args = parser.parse_args()
+print(args.tivars, args.parent, args.child, args.debug)
+
 # Check filesize 32768+1118 to validate that it is a proper ram-file
 # Read 1118 bytes and keep
 # Read 0x4000 bytes and then the next 16384 bytes
 # Create 0x8000 null bytes and add the loaded ram blocks in reverse
 
-file = open(sys.argv[1], 'rb')
+file = open(args.parent, 'rb')
 emulatorOverHead = file.read(1118)
 RAM2 = file.read(16384)
-RAM1 = file.read()
+RAM1 = file.read() # This should be another 16384 bytes
 file.close()
 
 length = len(RAM1)+len(RAM2)
@@ -44,7 +54,7 @@ ram = bytearray(0x8000*b'\x00' + RAM1 + RAM2)
 variables = []
 totalSize = 0
 totalSizeFAT = 0
-for variableName in sys.argv[3:]:
+for variableName in args.tivars:
     # Improvement: Lots of additional format checking can be done.
     variableFile = open(variableName, "rb")
     fileData = variableFile.read()
@@ -154,13 +164,15 @@ ram[0x9317+1] = belowFAT_msb
 # Write 0x8000-0xBFFF
 # Happy!
 
-newRAM = open(sys.argv[2], "wb")
+newRAM = open(args.child, "wb")
 newRAM.write(emulatorOverHead)
 newRAM.write(ram[0xC000:])
 newRAM.write(ram[0x8000:0xC000])
 newRAM.close()
 print("Wrote new RAM-file " + sys.argv[2])
 
-newRAM = open('debug.ram', "wb")
-newRAM.write(ram)
-newRAM.close()
+if args.debug:
+    newRAM = open('debug.ram', "wb")
+    newRAM.write(ram)
+    newRAM.close()
+    print("Wrote debug.ram")
