@@ -65,8 +65,8 @@ There are several improvements to this type of environment. I will list some sug
 - Extracting 83p files from a RAM-file could be nice.
 - Supporting other variable types than program-files.
 - Make it work for more calculators, either by improving AlmostTX or making a more general link port service in the emulator.
-- There is a pull request to improve the contrast handling in AndieGraph enabling fades.
-- AndieGraph to get multitouch support. Pull request prepared.
+- There is a pull request to improve the contrast handling in AndieGraph enabling fades. (see my fork https://github.com/deckaddict/AndieGraph)
+- AndieGraph to get multitouch support. Pull request prepared. (see my fork https://github.com/deckaddict/AndieGraph)
 - Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
 </details>
 
