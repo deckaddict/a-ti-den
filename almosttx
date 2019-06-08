@@ -169,7 +169,7 @@ newRAM.write(emulatorOverHead)
 newRAM.write(ram[0xC000:])
 newRAM.write(ram[0x8000:0xC000])
 newRAM.close()
-print("Wrote new RAM-file " + sys.argv[2])
+print("Wrote new RAM-file " + args.child)
 
 if args.debug:
     newRAM = open('debug.ram', "wb")
