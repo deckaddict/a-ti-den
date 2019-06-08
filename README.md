@@ -80,5 +80,5 @@ There are several improvements to this type of environment. I will list some sug
 - Joe Wingbermuehle for all the awesome code and library support in SOS.
 - Linus Åkesson for inspiration of fades using contrast.
 - Doug Melton for making AndieGraph open source.
-- To whoever wrote yoloader causing a copyright ruckus in the TI community.
+- To whoever created yoloader causing a copyright ruckus in the TI community.
 </details>
