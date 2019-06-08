@@ -7,7 +7,7 @@ My fascination for the TI calculators started when my brother got a TI-82 when I
 
 This fascination for portability has followed me and I think that the most natural environment to use today is an Android phone. Combine this with a TI-83 project that was never finalized and there is a need to get the environment for TI-83 development running.
 
-This article will list a set of software that can be used as a development environment on Android. Details are for TI-83 but it will generally be the same for most z80 based devices. 
+This repository lists a set of software that can be used as a development environment on Android. Details are for TI-83 but it will generally be the same for most z80 based devices.
 </details>
 
 <details>
