@@ -1,0 +1,7 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# This script starts AndieGraph from commandline.
+# It will reload the RAM-file. The purpose is to use in a build+run script.
+
+am start --user 0 -n net.supware.tipro/net.supware.tipro.MainActivity
+

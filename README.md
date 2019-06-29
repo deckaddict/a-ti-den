@@ -54,6 +54,8 @@ You will need your own ROM-file for the emulator.
 Among with the scripts to manage 83p files there is a script called AlmostTX that can populate a fresh AlmostTI compatible RAM-file with 83p files.
 
 Generate the clean ram file by starting AndieGraph and doing exit immediately after "Mem cleared" appears on the screen. The RAM-file is then found in the same location as your ROM-file.
+
+AndieGraph can be started from termux by using the startTI script. Started from this there is a graphical glitch but good enough for quick feedback.
 </details>
 
 <details>
@@ -67,7 +69,6 @@ There are several improvements to this type of environment. I will list some sug
 - Make it work for more calculators, either by improving AlmostTX or making a more general link port service in the emulator.
 - There is a pull request to improve the contrast handling in AndieGraph enabling fades. (see my fork https://github.com/deckaddict/AndieGraph)
 - AndieGraph to get multitouch support. Pull request prepared. (see my fork https://github.com/deckaddict/AndieGraph)
-- Making it possible to start AndieGraph with reloaded RAM-file via scripting.
 - Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
 </details>
 
