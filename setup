@@ -2,6 +2,8 @@
 
 pkg install -y clang cmake curl p7zip python
 
+mkdir cazlha
+pushd cazlha
 curl https://www.ticalc.org/pub/amiga/caz.lha --output caz.lha
 
 7z x caz.lha
@@ -10,14 +12,14 @@ cd caz/src
 sed -i 's/dcc/clang/' makefile
 make caz
 chmod a+x caz
-cp caz ../../cazc
+cp caz ../../../caz
 cd -
 
-rm -rf caz/
+popd
+rm -rf cazlha/
 
 touch ~/.bashrc
 path_addon='export PATH=$PATH:'"$PWD"
-echo P$path_addon"END"
 grep a-ti-den ~/.bashrc
 if [ "$?" -eq 0 ]; then
     sed -i "s|^.*a-ti-den.*\$|$path_addon|" ~/.bashrc
