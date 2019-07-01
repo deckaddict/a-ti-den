@@ -10,7 +10,17 @@ cd caz/src
 sed -i 's/dcc/clang/' makefile
 make caz
 chmod a+x caz
-cp caz ../../
+cp caz ../../cazc
 cd -
 
 rm -rf caz/
+
+touch ~/.bashrc
+path_addon='export PATH=$PATH:'"$PWD"
+echo P$path_addon"END"
+grep a-ti-den ~/.bashrc
+if [ "$?" -eq 0 ]; then
+    sed -i "s|^.*a-ti-den.*\$|$path_addon|" ~/.bashrc
+else
+    echo $path_addon>>~/.bashrc
+fi
