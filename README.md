@@ -59,6 +59,14 @@ AndieGraph can be started from termux by using the startTI script. Started from 
 </details>
 
 <details>
+<summary>HOWTO</summary>
+
+Cloning this repo and running ./setup will install dependencies, download and compile caz, and add the repository directory to the path in .bashrc
+Running tibuildandrun from a directory containing your source files will compile the code, link it to 83p, import to a RAM-file, and start AndieGraph.
+
+</details>
+
+<details>
 <summary>Current constraints and future features</summary>
 
 There are several improvements to this type of environment. I will list some suggestions here.

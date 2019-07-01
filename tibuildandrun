@@ -1,0 +1,30 @@
+#!/data/data/com.termux/files/usr/bin/python
+
+# Script that compiles all .z80-files in current directory,
+# converts the result into 83ps,
+# loads them (and any depending programs) into a RAM-file,
+# and launches AndieGraph.
+# The script currently uses hardcoded input/output
+
+import glob
+import os
+
+os.system('rm -f *.83p')
+source_files = glob.glob(os.getcwd() + '/*.z80')
+source_files.extend(glob.glob(os.getcwd() + '/*.asm'))
+
+vars_to_load = []
+for sf in source_files:
+    name = sf.split('/')[-1].split('.')[0]
+    extension = sf.split('.')[-1]
+    os.system('caz -o ' + name + '.bin ' + name + '.' + extension)
+    os.system('to8xx ' + name)
+    os.system('rm ' + name + '.bin')
+    vars_to_load.append(name + '.83p')
+
+vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83p'))
+vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83P'))
+
+os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM ' + ' '.join(vars_to_load))
+
+os.system('startTI')
