@@ -1,7 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/python
 #
 # Script to split 83g files into 83p files in order to load them into TiLem
-#
 
 # Note that all 2 byte sizes are LSB MSB
 #
@@ -25,37 +24,35 @@ import argparse
 
 def writeHeader(file):
     file.write(b'**TI83**')
-    file.write(chr(26))
-    file.write(chr(10))
-    file.write(chr(0))
+    file.write(bytearray((26,)))
+    file.write(bytearray((10,)))
+    file.write(bytearray((0,)))
     file.write(b'123456789012345678901234567890123456789012')
 
 def split_83g(fileName):
     file = open(fileName, 'rb')
     header = file.read(53)
     dataSizeBytes = file.read(2)
-    dataSize = ord(dataSizeBytes[1]) * 256 + ord(dataSizeBytes[0])
-
+    dataSize = dataSizeBytes[1] * 256 + dataSizeBytes[0]
     dataSection = file.read(dataSize)
 
     file.close()
 
-    while len(dataSection) >= (ord(dataSection[2]) + ord(dataSection[3])*256):
-        newFile = open(dataSection[5:13].replace(chr(0),b'')+b'.83p', 'wb')
+    while len(dataSection) > 3 and len(dataSection) >= (dataSection[2] + dataSection[3]*256):
+        newFile = open(dataSection[5:13].replace(chr(0).encode(),b'')+b'.83p', 'wb')
         writeHeader(newFile)
-        dataLength = ord(dataSection[2]) + ord(dataSection[3])*256 + 15 # 15 is the amount of bytes of header information
-        newFile.write(chr(dataLength%256))
-        newFile.write(chr(dataLength/256))
+        dataLength = dataSection[2] + dataSection[3]*256 + 15 # 15 is the amount of bytes of header information
+        newFile.write(bytearray((dataLength%256,)))
+        newFile.write(bytearray((dataLength//256,)))
         newFile.write(dataSection[0:dataLength])
 
         newDataSect = dataSection[0:dataLength]
         sum = 0
         for byte in newDataSect:
-            sum = ord(byte) + sum
+            sum = byte + sum
         checksum = sum % 65536
-
-        newFile.write(chr(checksum%256))
-        newFile.write(chr(checksum/256))
+        newFile.write(bytearray((checksum%256,)))
+        newFile.write(bytearray((checksum//256,)))
 
         newFile.close()
         dataSection = dataSection[dataLength:]
