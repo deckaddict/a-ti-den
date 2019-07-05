@@ -64,6 +64,8 @@ Generate the clean ram file by starting AndieGraph and doing exit immediately af
 Cloning this repo and running ./setup will install dependencies, download and compile caz, and add the repository directory to the path in .bashrc
 Running tibuildandrun from a directory containing your source files will compile the code, link it to 83p, import to a RAM-file, and start AndieGraph.
 
+You can also connect the command tidlrun to the termux URL-opener. This lets you go directly from the share option in your browser into a preinstalled RAM for given zip files with 83p/g-files.
+
 </details>
 
 <details>
@@ -78,6 +80,7 @@ There are several improvements to this type of environment. I will list some sug
 - There is a pull request to improve the contrast handling in AndieGraph enabling fades. (see my fork https://github.com/deckaddict/AndieGraph)
 - AndieGraph to get multitouch support. Pull request prepared. (see my fork https://github.com/deckaddict/AndieGraph)
 - Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
+- There is currently some hard coded paths for the tibuildrun and tidlrun command (~/ti-stuff/clean.ram). This path will change when I figure out a better one.
 </details>
 
 <details>
