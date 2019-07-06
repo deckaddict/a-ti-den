@@ -30,7 +30,6 @@ parser.add_argument('--debug', default='False', action='store_true',
                     help='Output debug.ram (64KB) for analysis.')
 
 args = parser.parse_args()
-print(args.tivars, args.parent, args.child, args.debug)
 
 # Check filesize 32768+1118 to validate that it is a proper ram-file
 # Read 1118 bytes and keep
@@ -62,7 +61,9 @@ for variableName in args.tivars:
     assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
     variable = {}
     variable['type'] = fileData[0x3b]
-    variable['name'] = fileData[0x3c:0x44].rstrip(b'\x00')
+#    variable['name'] = fileData[0x3c:0x44].rstrip(b'\x00')
+# Occasional examples that have not followed spec has appeared. Code below hopefully covers those.
+    variable['name'] = fileData[0x3c:0x44].split(b'\x00')[0]
     variable['data'] = fileData[0x48:-2]
     sizeFAT = len(variable['name']) + FATOVERHEAD
     totalSize += sizeFAT + len(variable['data']) + DATAOVERHEAD
