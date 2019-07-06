@@ -81,6 +81,7 @@ There are several improvements to this type of environment. I will list some sug
 - AndieGraph to get multitouch support. Pull request prepared. (see my fork https://github.com/deckaddict/AndieGraph)
 - Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
 - There is currently some hard coded paths for the tibuildrun and tidlrun command (~/ti-stuff/clean.ram). This path will change when I figure out a better one.
+- Using tidlrun to download a zip file won't work for shell dependent software. This can be improved to be figured out automatically.
 </details>
 
 <details>
