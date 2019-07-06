@@ -65,7 +65,7 @@ Cloning this repo and running ./setup will install dependencies, download and co
 Running tibuildandrun from a directory containing your source files will compile the code, link it to 83p, import to a RAM-file, and start AndieGraph.
 
 You can also connect the command tidlrun to the termux URL-opener. This lets you go directly from the share option in your browser into a preinstalled RAM for given zip files with 83p/g-files.
-
+![](https://github.com/deckaddict/my-large-files/raw/master/tidlrun.gif)
 </details>
 
 <details>
