@@ -10,6 +10,18 @@ import sys
 os.system('mkdir -p /data/data/com.termux/files/home/ti-stuff/downloads')
 os.chdir('/data/data/com.termux/files/home/ti-stuff/downloads/')
 os.system('rm -rf *')
+
+shell = sys.argv[1].split('/')[-2]
+shells = {'ashell' : 'https://www.ticalc.org/pub/83/asm/shells/ashell.zip',
+          'doorscs' : 'https://www.ticalc.org/pub/83/asm/shells/dcs7.zip',
+          'ion' : 'https://www.ticalc.org/pub/83/asm/shells/ion16u.zip',
+          'sos' : 'https://www.ticalc.org/pub/83/asm/shells/sos.zip',
+          'venus' : 'https://www.ticalc.org/pub/83/asm/shells/venus.zip'}
+
+if shell in shells:
+    os.system('curl --output shell.zip ' + shells[shell])
+    os.system('unzip shell.zip')
+
 os.system('curl --output dl.zip ' + sys.argv[1])
 os.system('unzip dl.zip')
 
