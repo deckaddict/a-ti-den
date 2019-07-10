@@ -58,7 +58,10 @@ for variableName in args.tivars:
     variableFile = open(variableName, "rb")
     fileData = variableFile.read()
     variableFile.close()
-    assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
+    if fileData[0:8] != b'**TI83**':
+        print(variableName + ' is not TI83-file')
+        continue
+#    assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
     variable = {}
     variable['type'] = fileData[0x3b]
 #    variable['name'] = fileData[0x3c:0x44].rstrip(b'\x00')
