@@ -25,20 +25,20 @@ if shell in shells:
 os.system('curl --output dl.zip ' + sys.argv[1])
 os.system('unzip dl.zip')
 
-group_files = glob.glob(os.getcwd() + '/*.83g')
-group_files.extend(glob.glob(os.getcwd() + '/**/*.83g'))
-group_files.extend(glob.glob(os.getcwd() + '/*.83G'))
-group_files.extend(glob.glob(os.getcwd() + '/**/*.83G'))
+group_files = glob.glob(os.getcwd() + '/*.83g', recursive=True)
+group_files.extend(glob.glob(os.getcwd() + '/**/*.83g', recursive=True))
+group_files.extend(glob.glob(os.getcwd() + '/*.83G', recursive=True))
+group_files.extend(glob.glob(os.getcwd() + '/**/*.83G', recursive=True))
 
 for group_file in group_files:
     os.system('split83g ' + group_file)
 
-prog_files = glob.glob(os.getcwd() + '/*.83p')
-prog_files.extend(glob.glob(os.getcwd() + '/**/*.83p'))
-prog_files.extend(glob.glob(os.getcwd() + '/*.83P'))
-prog_files.extend(glob.glob(os.getcwd() + '/**/*.83P'))
+prog_files = glob.glob(os.getcwd() + '/*.83p', recursive=True)
+prog_files.extend(glob.glob(os.getcwd() + '/**/*.83p', recursive=True))
+prog_files.extend(glob.glob(os.getcwd() + '/*.83P', recursive=True))
+prog_files.extend(glob.glob(os.getcwd() + '/**/*.83P', recursive=True))
 
-print('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM ' + ' '.join(prog_files))
-os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM ' + ' '.join(prog_files))
+print('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')
+os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')
 
 os.system('startTI')
