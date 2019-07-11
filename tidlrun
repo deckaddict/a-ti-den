@@ -12,7 +12,7 @@ os.chdir('/data/data/com.termux/files/home/ti-stuff/downloads/')
 os.system('rm -rf *')
 
 shell = sys.argv[1].split('/')[-2]
-shells = {'ashell' : 'https://www.ticalc.org/pub/83/asm/shells/ashell.zip',
+shells = {'ashell83' : 'https://www.ticalc.org/pub/83/asm/shells/ashell.zip',
           'doorscs' : 'https://www.ticalc.org/pub/83/asm/shells/dcs7.zip',
           'ion' : 'https://www.ticalc.org/pub/83/asm/shells/ion16u.zip',
           'sos' : 'https://www.ticalc.org/pub/83/asm/shells/sos.zip',
@@ -25,18 +25,25 @@ if shell in shells:
 os.system('curl --output dl.zip ' + sys.argv[1])
 os.system('unzip dl.zip')
 
-group_files = glob.glob(os.getcwd() + '/*.83g', recursive=True)
-group_files.extend(glob.glob(os.getcwd() + '/**/*.83g', recursive=True))
-group_files.extend(glob.glob(os.getcwd() + '/*.83G', recursive=True))
+group_files = glob.glob(os.getcwd() + '/**/*.83g', recursive=True)
 group_files.extend(glob.glob(os.getcwd() + '/**/*.83G', recursive=True))
 
 for group_file in group_files:
     os.system('split83g ' + group_file)
 
-prog_files = glob.glob(os.getcwd() + '/*.83p', recursive=True)
-prog_files.extend(glob.glob(os.getcwd() + '/**/*.83p', recursive=True))
-prog_files.extend(glob.glob(os.getcwd() + '/*.83P', recursive=True))
+prog_files = glob.glob(os.getcwd() + '/**/*.83p', recursive=True)
 prog_files.extend(glob.glob(os.getcwd() + '/**/*.83P', recursive=True))
+
+if shell == 'sos':
+    used_libs = set()
+    sos_libs = [b'ZLIB', b'ZGFXL', b'ZINPT']
+    for prog in prog_files:
+        progdata = open(prog, 'rb').read()
+        for lib in sos_libs:
+            if progdata.find(lib) > 0:
+                used_libs.add(lib)
+    for lib in used_libs:
+        prog_files.append('/data/data/com.termux/files/home/ti-stuff/soslibs/' + lib.decode() + '.83p')
 
 print('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')
 os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')

@@ -18,6 +18,8 @@ cd -
 popd
 rm -rf cazlha/
 
+# Placeholder to set up a place where all SOS libraries are cached
+
 touch ~/.bashrc
 path_addon='export PATH=$PATH:'"$PWD"
 grep a-ti-den ~/.bashrc
