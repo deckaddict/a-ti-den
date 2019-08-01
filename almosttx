@@ -64,8 +64,7 @@ for variableName in args.tivars:
 #    assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
     variable = {}
     variable['type'] = fileData[0x3b]
-#    variable['name'] = fileData[0x3c:0x44].rstrip(b'\x00')
-# Occasional examples that have not followed spec has appeared. Code below hopefully covers those.
+    # Occasional examples that have not followed spec has appeared. Code below hopefully covers those.
     variable['name'] = fileData[0x3c:0x44].split(b'\x00')[0].split(b' ')[0]
     variable['data'] = fileData[0x48:-2]
     sizeFAT = len(variable['name']) + FATOVERHEAD
