@@ -97,7 +97,6 @@ ram[0x8098+1] = ram[0xfdb2]
 yvars_start = ram[0xfdb2]*256 + ram[0xfdb2+1]
 # Calculate need of FAT data and figure out good start adress for programdata
 prgm_ptr = yvars_start - totalSize + totalSizeFAT
-prgm_pt2 = 0x9349
 
 ram[0x8098] = prgm_ptr % 256
 ram[0x8098+1] = prgm_ptr // 256
@@ -132,14 +131,6 @@ for variable in variables:
     for byte in variable['data']:
         ram[prgm_ptr] = byte
         prgm_ptr += 1
-
-    ram[prgm_pt2] = len(variable['data']) % 256
-    prgm_pt2 += 1
-    ram[prgm_pt2] = len(variable['data']) // 256
-    prgm_pt2 += 1
-    for byte in variable['data']:
-        ram[prgm_pt2] = byte
-        prgm_pt2 += 1
 
 
 # Update all pointers around 0x93.. and all pointers around fdb2-fe64
