@@ -19,6 +19,11 @@ import argparse
 FATOVERHEAD = 4
 DATAOVERHEAD = 2
 
+# Adresses
+
+YVARS_POINTER_MSB = 0xfdb2 # Value in this location points to storage of Y-VARS
+YVARS_POINTER_LSB = 0xfdb3
+
 parser = argparse.ArgumentParser(description='Load variable files into AlmostTI RAM-file.')
 parser.add_argument('tivars', metavar='TI-varfile', type=str, nargs='+',
                     help='an 83p-file to be loaded.')
@@ -51,8 +56,8 @@ ram = bytearray(0x8000*b'\x00' + RAM1 + RAM2)
 
 # Read each program and create a list with an entry for each. Name, type, data, length, total memconsumption (4+len(name)+len(data)+2)
 variables = []
-totalSize = 0
-totalSizeFAT = 0
+additionalSize = 0
+additionalSizeFAT = 0
 for variableName in args.tivars:
     # Improvement: Lots of additional format checking can be done.
     variableFile = open(variableName, "rb")
@@ -61,42 +66,47 @@ for variableName in args.tivars:
     if fileData[0:8] != b'**TI83**':
         print(variableName + ' is not TI83-file')
         continue
-#    assert fileData[0:8] == b'**TI83**', "Not a file for TI83"
     variable = {}
     variable['type'] = fileData[0x3b]
     # Occasional examples that have not followed spec has appeared. Code below hopefully covers those.
     variable['name'] = fileData[0x3c:0x44].split(b'\x00')[0].split(b' ')[0]
     variable['data'] = fileData[0x48:-2]
     sizeFAT = len(variable['name']) + FATOVERHEAD
-    totalSize += sizeFAT + len(variable['data']) + DATAOVERHEAD
-    totalSizeFAT += sizeFAT
+    additionalSize += sizeFAT + len(variable['data']) + DATAOVERHEAD
+    additionalSizeFAT += sizeFAT
     variables.append(variable)
     print("Read " + str(variable['name']) + " from file")
 
+# Check free RAM
+# 27118 - (fatstart - yvars+32*6 + 1 + ( sum len(data) for each file in FAT))
+freeRAM = 27118
+
 # Count and verify that it totals no more than 27118 bytes, which is how much space we got in a clean RAM.
-assert totalSize <= 27118, "Not enough memory available in RAM image"
+assert additionalSize <= freeRAM, "Not enough memory available in RAM image"
 
 # Future: Move existing program data to fit FAT extension
 # Future: move y-vars (currently just zeros anyway)
 # Re-map Y-vars links
 for yvar in range(31):
     yvar_ix = yvar*6
-    newAddress = ram[0xfdb2+yvar_ix] * 256 + ram[0xfdb2+yvar_ix+1] - totalSizeFAT
+    newAddress = ram[YVARS_POINTER_MSB+yvar_ix] * 256 + ram[YVARS_POINTER_LSB+yvar_ix] - additionalSizeFAT
     msb = newAddress//256
     lsb = newAddress%256
-    ram[0xfdb2+yvar_ix] = msb
-    ram[0xfdb2+yvar_ix+1] = lsb
+    ram[YVARS_POINTER_MSB+yvar_ix] = msb
+    ram[YVARS_POINTER_LSB+yvar_ix] = lsb
 
 # Storing start of Y-vars data
 # Note that source has MSB first and destination has LSB first
-ram[0x931B] = ram[0xfdb2+1]
-ram[0x931B+1] = ram[0xfdb2]
-ram[0x8098] = ram[0xfdb2+1]
-ram[0x8098+1] = ram[0xfdb2]
-yvars_start = ram[0xfdb2]*256 + ram[0xfdb2+1]
+ram[0x931B] = ram[YVARS_POINTER_LSB]
+ram[0x931B+1] = ram[YVARS_POINTER_MSB]
+ram[0x8098] = ram[YVARS_POINTER_LSB]
+ram[0x8098+1] = ram[YVARS_POINTER_MSB]
+yvars_start = ram[YVARS_POINTER_MSB]*256 + ram[YVARS_POINTER_LSB]
 # Calculate need of FAT data and figure out good start adress for programdata
-prgm_ptr = yvars_start - totalSize + totalSizeFAT
+prgm_ptr = yvars_start - additionalSize + additionalSizeFAT
 
+# When these are explored in more detail,
+# Remember to ensure that proper one is used for RAM free check.
 ram[0x8098] = prgm_ptr % 256
 ram[0x8098+1] = prgm_ptr // 256
 ram[0x91e1] = prgm_ptr % 256
@@ -104,7 +114,7 @@ ram[0x91e1+1] = prgm_ptr // 256
 ram[0x91e3] = prgm_ptr % 256
 ram[0x91e3+1] = prgm_ptr // 256
 
-someSize = ram[0x809a] + ram[0x809a+1]*256 + totalSize - totalSizeFAT
+someSize = ram[0x809a] + ram[0x809a+1]*256 + additionalSize - additionalSizeFAT
 ram[0x809a] = someSize % 256
 ram[0x809a+1] = someSize // 256
 
@@ -133,7 +143,7 @@ for variable in variables:
 
 
 # Update all pointers around 0x93.. and all pointers around fdb2-fe64
-endOfFAT = 0xfd75-totalSizeFAT
+endOfFAT = 0xfd75-additionalSizeFAT
 endOfFAT_msb = endOfFAT//256
 endOfFAT_lsb = endOfFAT%256
 ram[0x9309] = endOfFAT_lsb
