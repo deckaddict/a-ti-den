@@ -19,10 +19,48 @@ import argparse
 FATOVERHEAD = 4
 DATAOVERHEAD = 2
 
-# Adresses
+# Memory adresses
 
-YVARS_POINTER_MSB = 0xfdb2 # Value in this location points to storage of Y-VARS
+# FAT END is the first byte of the FAT data reading it backwards.
+FAT_START = 0xfd74
+
+# Value in this location points to storage of Y-VARS
+YVARS_POINTER_MSB = 0xfdb2
 YVARS_POINTER_LSB = 0xfdb3
+
+# Value in these locations probably represent the start/end of different data types
+# Currently only programs YVARS and FAT are mapped and therefore these all point to program start now.
+
+# Known for program related addresses
+USER_VARIABLE_TYPE_01_LSB = 0x8098
+USER_VARIABLE_TYPE_01_MSB = 0x8099
+USER_VARIABLE_TYPE_02_LSB = 0x91e1
+USER_VARIABLE_TYPE_02_MSB = 0x91e2
+USER_VARIABLE_TYPE_03_LSB = 0x91e3
+USER_VARIABLE_TYPE_03_MSB = 0x91e4
+
+# Known for FAT related addresses
+USER_VARIABLE_TYPE_04_LSB = 0x9309
+USER_VARIABLE_TYPE_04_MSB = 0x930a
+USER_VARIABLE_TYPE_05_LSB = 0x930b
+USER_VARIABLE_TYPE_05_MSB = 0x930c
+USER_VARIABLE_TYPE_06_LSB = 0x930d
+USER_VARIABLE_TYPE_06_MSB = 0x930e
+USER_VARIABLE_TYPE_07_LSB = 0x930f
+USER_VARIABLE_TYPE_07_MSB = 0x9310
+USER_VARIABLE_TYPE_08_LSB = 0x9311
+USER_VARIABLE_TYPE_08_MSB = 0x9312
+USER_VARIABLE_TYPE_09_LSB = 0x9317
+USER_VARIABLE_TYPE_09_MSB = 0x9318
+
+# Y-VARS start
+USER_VARIABLE_TYPE_10_LSB = 0x931b
+USER_VARIABLE_TYPE_10_MSB = 0x931c
+
+# Value in this location indicates the memory used
+# Exactly what is included is unclear but space of files can be added/subtracted.
+MEM_USAGE_LSB = 0x809a
+MEM_USAGE_MSB = 0x809b
 
 parser = argparse.ArgumentParser(description='Load variable files into AlmostTI RAM-file.')
 parser.add_argument('tivars', metavar='TI-varfile', type=str, nargs='+',
@@ -97,30 +135,27 @@ for yvar in range(31):
 
 # Storing start of Y-vars data
 # Note that source has MSB first and destination has LSB first
-ram[0x931B] = ram[YVARS_POINTER_LSB]
-ram[0x931B+1] = ram[YVARS_POINTER_MSB]
-ram[0x8098] = ram[YVARS_POINTER_LSB]
-ram[0x8098+1] = ram[YVARS_POINTER_MSB]
+ram[USER_VARIABLE_TYPE_10_LSB] = ram[YVARS_POINTER_LSB]
+ram[USER_VARIABLE_TYPE_10_MSB] = ram[YVARS_POINTER_MSB]
 yvars_start = ram[YVARS_POINTER_MSB]*256 + ram[YVARS_POINTER_LSB]
 # Calculate need of FAT data and figure out good start adress for programdata
 prgm_ptr = yvars_start - additionalSize + additionalSizeFAT
 
 # When these are explored in more detail,
 # Remember to ensure that proper one is used for RAM free check.
-ram[0x8098] = prgm_ptr % 256
-ram[0x8098+1] = prgm_ptr // 256
-ram[0x91e1] = prgm_ptr % 256
-ram[0x91e1+1] = prgm_ptr // 256
-ram[0x91e3] = prgm_ptr % 256
-ram[0x91e3+1] = prgm_ptr // 256
+ram[USER_VARIABLE_TYPE_01_LSB] = prgm_ptr % 256
+ram[USER_VARIABLE_TYPE_01_MSB] = prgm_ptr // 256
+ram[USER_VARIABLE_TYPE_02_LSB] = prgm_ptr % 256
+ram[USER_VARIABLE_TYPE_02_MSB] = prgm_ptr // 256
+ram[USER_VARIABLE_TYPE_03_LSB] = prgm_ptr % 256
+ram[USER_VARIABLE_TYPE_03_MSB] = prgm_ptr // 256
 
-someSize = ram[0x809a] + ram[0x809a+1]*256 + additionalSize - additionalSizeFAT
-ram[0x809a] = someSize % 256
-ram[0x809a+1] = someSize // 256
+someSize = ram[MEM_USAGE_LSB] + ram[MEM_USAGE_MSB]*256 + additionalSize - additionalSizeFAT
+ram[MEM_USAGE_LSB] = someSize % 256
+ram[MEM_USAGE_MSB] = someSize // 256
 
 # Iterate variable list and write FAT and programdata for each program.
-FAT_ptr = 0xfd75
-FAT_ptr -=1
+FAT_ptr = FAT_START
 for variable in variables:
     ram[FAT_ptr] = variable['type']
     FAT_ptr -= 1
@@ -143,25 +178,25 @@ for variable in variables:
 
 
 # Update all pointers around 0x93.. and all pointers around fdb2-fe64
-endOfFAT = 0xfd75-additionalSizeFAT
-endOfFAT_msb = endOfFAT//256
-endOfFAT_lsb = endOfFAT%256
-ram[0x9309] = endOfFAT_lsb
-ram[0x9309+1] = endOfFAT_msb
-ram[0x930B] = endOfFAT_lsb
-ram[0x930B+1] = endOfFAT_msb
-ram[0x930D] = endOfFAT_lsb
-ram[0x930D+1] = endOfFAT_msb
+endOfFAT = FAT_START - additionalSizeFAT + 1
+endOfFAT_msb = endOfFAT // 256
+endOfFAT_lsb = endOfFAT % 256
+ram[USER_VARIABLE_TYPE_04_LSB] = endOfFAT_lsb
+ram[USER_VARIABLE_TYPE_04_MSB] = endOfFAT_msb
+ram[USER_VARIABLE_TYPE_05_LSB] = endOfFAT_lsb
+ram[USER_VARIABLE_TYPE_05_MSB] = endOfFAT_msb
+ram[USER_VARIABLE_TYPE_06_LSB] = endOfFAT_lsb
+ram[USER_VARIABLE_TYPE_06_MSB] = endOfFAT_msb
 
 belowFAT = endOfFAT - 1
-belowFAT_msb = belowFAT//256
-belowFAT_lsb = belowFAT%256
-ram[0x930F] = belowFAT_lsb
-ram[0x930F+1] = belowFAT_msb
-ram[0x9311] = belowFAT_lsb
-ram[0x9311+1] = belowFAT_msb
-ram[0x9317] = belowFAT_lsb
-ram[0x9317+1] = belowFAT_msb
+belowFAT_msb = belowFAT // 256
+belowFAT_lsb = belowFAT % 256
+ram[USER_VARIABLE_TYPE_07_LSB] = belowFAT_lsb
+ram[USER_VARIABLE_TYPE_07_MSB] = belowFAT_msb
+ram[USER_VARIABLE_TYPE_08_LSB] = belowFAT_lsb
+ram[USER_VARIABLE_TYPE_08_MSB] = belowFAT_msb
+ram[USER_VARIABLE_TYPE_09_LSB] = belowFAT_lsb
+ram[USER_VARIABLE_TYPE_09_MSB] = belowFAT_msb
 
 # Write back the 1118
 # Write 0xC000-0xFFFF
