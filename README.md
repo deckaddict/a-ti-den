@@ -56,6 +56,7 @@ AndieGraph can be started from termux by using the startTI script. Started from 
 Among with the scripts to manage 83p files there is a script called AlmostTX that can populate a fresh AlmostTI compatible RAM-file with 83p files.
 
 Generate the clean ram file by starting AndieGraph and doing exit immediately after "Mem cleared" appears on the screen. The RAM-file is then found in the same location as your ROM-file.
+For ION programs you need to first install ION and use that RAM-file as parent for subsequent programs.
 </details>
 
 <details>
