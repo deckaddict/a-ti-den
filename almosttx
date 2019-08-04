@@ -15,6 +15,31 @@
 
 import argparse
 
+def r2p(ram, address, order='lsb'):
+    """
+    Read pointer value from memory address.
+    """
+
+    p = [ram[address], ram[address+1]]
+
+    if order == 'lsb':
+        p = p[::-1]
+
+    return p[0] * 256 + p[1]
+
+def v2r(ram, address, value, order='lsb'):
+    """
+    Read pointer value from memory address.
+    """
+
+    v = [value//256, value%256]
+
+    if order == 'lsb':
+        v = v[::-1]
+
+    ram[address] = v[0]
+    ram[address+1] = v[1]
+
 # Constants
 FATOVERHEAD = 4
 DATAOVERHEAD = 2
@@ -92,6 +117,13 @@ print("Loaded ",length," bytes of RAM memory")
 
 ram = bytearray(0x8000*b'\x00' + RAM1 + RAM2)
 
+# Idea:
+# Set up a list of all object types and storage locations
+# Ensuring smooth re-arrangements of them all.
+# Example:
+# var_types = [[start_ptr, end_ptr, 'Prgm', dataSize, FATsize],]
+# then lists, variables, pictures
+
 # Read each program and create a list with an entry for each. Name, type, data, length, total memconsumption (4+len(name)+len(data)+2)
 variables = []
 additionalSize = 0
@@ -116,14 +148,46 @@ for variableName in args.tivars:
     print("Read " + str(variable['name']) + " from file")
 
 # Check free RAM
-# 27118 - (fatstart - yvars+32*6 + 1 + ( sum len(data) for each file in FAT))
-freeRAM = 27118
+# While reading through FAT, modify for any new files added.
+FAT_end = max(r2p(ram, USER_VARIABLE_TYPE_04_LSB), # max is used since these three pointers are a bit unknown but at least the FAT is farthest away in memory.
+              r2p(ram, USER_VARIABLE_TYPE_05_LSB),
+              r2p(ram, USER_VARIABLE_TYPE_06_LSB),
+              )
+
+FAT_data = ram[FAT_end:FAT_START+1]
+FAT_size = len(FAT_data)
+FAT_data=FAT_data[::-1]
+new_FAT=bytearray()
+variables_size = 0
+while len(FAT_data) > 0:
+    prgm_ptr = FAT_data[1] + FAT_data[2] * 256
+    variables_size += ram[prgm_ptr] + ram[prgm_ptr+1] * 256
+    FAT_data[1] = (prgm_ptr - additionalSizeFAT) % 256
+    FAT_data[2] = (prgm_ptr - additionalSizeFAT) // 256
+    new_FAT.extend(FAT_data[0:3+FAT_data[3]+1])
+    FAT_data = FAT_data[3+FAT_data[3]+1:]
+ram[FAT_end:FAT_START+1] = new_FAT[::-1]
+
+usedRAM = variables_size + FAT_size
+freeRAM = 27118 - usedRAM
+print("RAM already contains " + str(usedRAM) + " bytes.")
+print(str(freeRAM) + " available in parent RAM")
 
 # Count and verify that it totals no more than 27118 bytes, which is how much space we got in a clean RAM.
 assert additionalSize <= freeRAM, "Not enough memory available in RAM image"
 
-# Future: Move existing program data to fit FAT extension
-# Future: move y-vars (currently just zeros anyway)
+# Move existing program data to fit FAT extension
+# move y-vars (currently just zeros anyway)
+prgm_start = max(r2p(ram, USER_VARIABLE_TYPE_01_LSB), # min is used since these three pointers are a bit unknown but at least the value means that the memory is occupied from there.
+                 r2p(ram, USER_VARIABLE_TYPE_02_LSB),
+                 r2p(ram, USER_VARIABLE_TYPE_03_LSB),
+                 )
+
+to_ptr = prgm_start - additionalSizeFAT
+from_ptr = prgm_start
+for i in range(FAT_end - prgm_start):
+    ram[to_ptr+i] = ram[from_ptr+i]
+
 # Re-map Y-vars links
 for yvar in range(31):
     yvar_ix = yvar*6
@@ -138,8 +202,9 @@ for yvar in range(31):
 ram[USER_VARIABLE_TYPE_10_LSB] = ram[YVARS_POINTER_LSB]
 ram[USER_VARIABLE_TYPE_10_MSB] = ram[YVARS_POINTER_MSB]
 yvars_start = ram[YVARS_POINTER_MSB]*256 + ram[YVARS_POINTER_LSB]
+
 # Calculate need of FAT data and figure out good start adress for programdata
-prgm_ptr = yvars_start - additionalSize + additionalSizeFAT
+prgm_ptr = yvars_start - variables_size - additionalSize + additionalSizeFAT
 
 # When these are explored in more detail,
 # Remember to ensure that proper one is used for RAM free check.
@@ -156,6 +221,10 @@ ram[MEM_USAGE_MSB] = someSize // 256
 
 # Iterate variable list and write FAT and programdata for each program.
 FAT_ptr = FAT_START
+FAT_ptr = max(r2p(ram, USER_VARIABLE_TYPE_07_LSB),
+              r2p(ram, USER_VARIABLE_TYPE_08_LSB),
+              r2p(ram, USER_VARIABLE_TYPE_09_LSB),
+              )
 for variable in variables:
     ram[FAT_ptr] = variable['type']
     FAT_ptr -= 1
@@ -179,6 +248,7 @@ for variable in variables:
 
 # Update all pointers around 0x93.. and all pointers around fdb2-fe64
 endOfFAT = FAT_START - additionalSizeFAT + 1
+endOfFAT = FAT_ptr + 1
 endOfFAT_msb = endOfFAT // 256
 endOfFAT_lsb = endOfFAT % 256
 ram[USER_VARIABLE_TYPE_04_LSB] = endOfFAT_lsb
