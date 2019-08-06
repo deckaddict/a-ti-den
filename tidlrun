@@ -48,7 +48,13 @@ if shell == 'sos':
     for lib in used_libs:
         prog_files.append('/data/data/com.termux/files/home/ti-stuff/soslibs/' + lib.decode() + '.83p')
 
-print('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')
-os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"')
+if shell == 'ion':
+    parent = '~/ti-stuff/ion.ram'
+else:
+    parent = '~/ti-stuff/clean.ram'
+
+command = 'almosttx --parent ' + parent + ' --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"'
+print(command)
+os.system(command)
 
 os.system('startTI')
