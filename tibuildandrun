@@ -25,6 +25,6 @@ for sf in source_files:
 vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83p'))
 vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83P'))
 
-os.system('almosttx --parent ~/ti-stuff/clean.ram --child /sdcard/Download/Ti83.RAM ' + ' '.join(vars_to_load))
+os.system('almosttx --parent /sdcard/a-ti-den/clean.ram --child /sdcard/a-ti-den/Ti83.RAM ' + ' '.join(vars_to_load))
 
 os.system('startTI')

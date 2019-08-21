@@ -1,7 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
+# All dependencies needed
 pkg install -y clang cmake curl p7zip python
 
+# Download and compile the caz compiler.
 mkdir cazlha
 pushd cazlha
 curl https://www.ticalc.org/pub/amiga/caz.lha --output caz.lha
@@ -28,3 +30,6 @@ if [ "$?" -eq 0 ]; then
 else
     echo $path_addon>>~/.bashrc
 fi
+
+# A place to keep ROM-, RAM-, and log-files.
+mkdir -p /sdcard/a-ti-den

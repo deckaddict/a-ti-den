@@ -7,8 +7,8 @@ import glob
 import os
 import sys
 
-os.system('mkdir -p /data/data/com.termux/files/home/ti-stuff/downloads')
-os.chdir('/data/data/com.termux/files/home/ti-stuff/downloads/')
+os.system('mkdir -p /sdcard/a-ti-den/downloads')
+os.chdir('/sdcard/a-ti-den/downloads/')
 os.system('rm -rf *')
 
 shell = sys.argv[1].split('/')[-2]
@@ -46,14 +46,14 @@ if shell == 'sos':
             if progdata.find(lib) > 0:
                 used_libs.add(lib)
     for lib in used_libs:
-        prog_files.append('/data/data/com.termux/files/home/ti-stuff/soslibs/' + lib.decode() + '.83p')
+        prog_files.append('/sdcard/a-ti-den/soslibs/' + lib.decode() + '.83p')
 
 if shell == 'ion':
-    parent = '~/ti-stuff/ion.ram'
+    parent = '/sdcard/a-ti-den/ion.ram'
 else:
-    parent = '~/ti-stuff/clean.ram'
+    parent = '/sdcard/a-ti-den/clean.ram'
 
-command = 'almosttx --parent ' + parent + ' --child /sdcard/Download/Ti83.RAM "' + '" "'.join(prog_files) + '"'
+command = 'almosttx --parent ' + parent + ' --child /sdcard/a-ti-den/Ti83.RAM "' + '" "'.join(prog_files) + '"'
 print(command)
 os.system(command)
 
