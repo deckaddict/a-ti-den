@@ -14,6 +14,7 @@
 # List of 83p files to load in sequential order.
 
 import argparse
+import os
 
 def r2p(ram, address, order='lsb'):
     """
@@ -99,13 +100,19 @@ parser.add_argument('--debug', default='False', action='store_true',
 
 args = parser.parse_args()
 
-# Check filesize 32768+1118 to validate that it is a proper ram-file
-# Read 1118 bytes and keep
+# The RAM-file starts with some internal state registry data.
+# This data may be differently sized in different versions of AndieGraph depending on CPU architecture or actual code changes.
 # Read 0x4000 bytes and then the next 16384 bytes
 # Create 0x8000 null bytes and add the loaded ram blocks in reverse
 
 file = open(args.parent, 'rb')
-emulatorOverHead = file.read(1118)
+
+old_file_position = file.tell()
+file.seek(0, os.SEEK_END)
+OHsize = file.tell() - 32768
+file.seek(old_file_position, os.SEEK_SET)
+
+emulatorOverHead = file.read(OHsize)
 RAM2 = file.read(16384)
 RAM1 = file.read() # This should be another 16384 bytes
 file.close()
