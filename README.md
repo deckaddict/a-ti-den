@@ -80,9 +80,8 @@ There are several improvements to this type of environment. I will list some sug
 - Make it work for more calculators, either by improving AlmostTX or making a more general link port service in the emulator.
 - There is a pull request to improve the contrast handling in AndieGraph enabling fades. (see my fork https://github.com/deckaddict/AndieGraph)
 - AndieGraph to get multitouch support. Pull request prepared. (see my fork https://github.com/deckaddict/AndieGraph)
-- Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed.
-- There is currently some hard coded paths for the tibuildrun and tidlrun command (~/ti-stuff/clean.ram). This path will change when I figure out a better one.
-- Using tidlrun to download a zip file won't work for shell dependent software. This can be improved to be figured out automatically.
+- Letting link port signals through to the speaker meaning that all cool sound effects that people have done can be enjoyed. Update: an early naive version is on its way. Script makewave will be used for the purpose of recording signals as well.
+- There is currently some hard coded paths for the tibuildrun and tidlrun command (/sdcard/a-ti-den/clean.ram). This path will change when I figure out a better one.
 </details>
 
 <details>
@@ -95,5 +94,6 @@ There are several improvements to this type of environment. I will list some sug
 - Joe Wingbermuehle for all the awesome code and library support in SOS.
 - Linus Åkesson for inspiration of fades using contrast.
 - Doug Melton for making AndieGraph open source.
+- Marat Fayzullin for making AlmostTI open source enabling AndieGraph.
 - To whoever created yoloader causing a copyright ruckus in the TI community.
 </details>
