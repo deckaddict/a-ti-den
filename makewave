@@ -1,0 +1,87 @@
+#!/data/data/com.termux/files/usr/bin/python
+
+import argparse
+import struct
+import time
+import wave
+
+# For better future proofing, these shall be read from the input file.
+sample_rate = 48000.0
+CPU_hertz = 6000000
+wavename = str(time.time())
+
+parser = argparse.ArgumentParser(description='Generate Wave-file from linkport signals logged from AndieGraph.')
+parser.add_argument('name', type=str, nargs='?', default=wavename,
+                    help='Name of wave file excluding extension.')
+
+args = parser.parse_args()
+
+# Audio will contain a long list of samples (i.e. floating point numbers describing the
+# waveform).  If you were working with a very long sound you'd want to stream this to
+# disk instead of buffering it all in memory list this.  But most sounds will fit in 
+# memory.
+audio = []
+
+noisef = open('/sdcard/a-ti-den/almostaudio.txt', 'rb')
+sample_rate = float(noisef.readline().split(b':')[1])
+CPU_hertz = int(noisef.readline().split(b':')[1])
+noised = noisef.readlines()
+dps = []
+for dpstring in noised:
+    dp = dpstring.split(b" ")
+    ts = float(dp[0]) # This one expected uSeconds
+    ts = (int(dp[0])*167)/1000 # Clockcycles times 167 NanoSeconds (6Mhz)
+    rl = int(dp[1])
+    left = int(rl%2)
+    right = int((rl/2)%2)
+    dps.append((ts, left, right))
+
+# Use microseconds to make it comparable
+step_length = 1000000/sample_rate
+
+samplelength=dps[-1][0] - dps[0][0]
+print(dps[-1][0], dps[0][0], samplelength)
+
+noofsamples=int(samplelength//step_length)
+print(noofsamples)
+
+amps=[-1.0, 1.0]
+timepoint = dps[0][0]
+i=0
+for x in range(noofsamples):
+    if not timepoint < dps[i+1][0]:
+         i+=1
+    audio.append((amps[dps[i][1]],amps[dps[i][2]]))
+    timepoint+=step_length
+
+print(len(audio))
+
+def save_wav(file_name):
+    # Open up a wav file
+    wav_file=wave.open(file_name,"w")
+
+    # wav params
+    nchannels = 2
+
+    sampwidth = 2
+
+    nframes = len(audio)
+    comptype = "NONE"
+    compname = "not compressed"
+    wav_file.setparams((nchannels, sampwidth, sample_rate, nframes, comptype, compname))
+
+    # Stereo channels are placed next to each other frame by frame.
+    framedata = []
+    for sample in audio:
+        framedata.append(struct.pack('h', int( sample[0] * 32767.0 )))
+        framedata.append(struct.pack('h', int( sample[1] * 32767.0 )))
+
+    frameblob = b''.join(framedata)
+    wav_file.writeframes(frameblob)
+
+    wav_file.close()
+
+    return
+
+
+save_wav("/sdcard/a-ti-den/" + args.name + ".wav")
