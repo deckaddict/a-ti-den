@@ -8,6 +8,7 @@
 
 import glob
 import os
+import os.path
 
 os.system('rm -f *.83p')
 source_files = glob.glob(os.getcwd() + '/*.z80')
@@ -21,6 +22,22 @@ for sf in source_files:
     os.system('to8xx ' + name)
     os.system('rm ' + name + '.bin')
     vars_to_load.append(name + '.83p')
+    if os.path.exists(os.path.join(os.getcwd(),"dependencies","yoloader.83p")):
+        loader=b'YOLOADER'
+    elif os.path.exists(os.path.join(os.getcwd(),"dependencies","zasmload.83p")):
+        loader=b'ZASMLOAD'
+    else:
+        loader=None
+    if not loader is None:
+        zname=("Z"+name)[:-1]
+        runfile=open(zname+'.bin','wb')
+        data=b'\x2a'+name.upper().encode()+b'\x3f\xe7\x39\x5f'+loader
+        runfile.write(data)
+        runfile.close()
+        os.system('to8xx ' + zname)
+        os.system('rm ' + zname + '.bin')
+        vars_to_load.append(zname + '.83p')
+
 
 vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83p'))
 vars_to_load.extend(glob.glob(os.getcwd() + '/dependencies/*.83P'))
