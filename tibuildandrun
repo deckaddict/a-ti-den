@@ -29,7 +29,7 @@ for sf in source_files:
     else:
         loader=None
     if not loader is None:
-        zname=("Z"+name)[:-1]
+        zname=("A"+name)[:-1]
         runfile=open(zname+'.bin','wb')
         data=b'\x2a'+name.upper().encode()+b'\x3f\xe7\x39\x5f'+loader
         runfile.write(data)
